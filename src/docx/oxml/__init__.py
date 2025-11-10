@@ -155,6 +155,8 @@ from .table import (
     CT_TblGrid,
     CT_TblGridCol,
     CT_TblLayoutType,
+    CT_TblOverlap,
+    CT_TblpPr,
     CT_TblPr,
     CT_TblPrEx,
     CT_TblWidth,
@@ -173,6 +175,8 @@ register_element_cls("w:gridSpan", CT_DecimalNumber)
 register_element_cls("w:tbl", CT_Tbl)
 register_element_cls("w:tblGrid", CT_TblGrid)
 register_element_cls("w:tblLayout", CT_TblLayoutType)
+register_element_cls("w:tblOverlap", CT_TblOverlap)
+register_element_cls("w:tblpPr", CT_TblpPr)
 register_element_cls("w:tblPr", CT_TblPr)
 register_element_cls("w:tblPrEx", CT_TblPrEx)
 register_element_cls("w:tblStyle", CT_String)

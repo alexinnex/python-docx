@@ -8,7 +8,12 @@ from typing_extensions import TypeAlias
 
 from docx.blkcntnr import BlockItemContainer
 from docx.enum.style import WD_STYLE_TYPE
-from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT
+from docx.enum.table import (
+    WD_CELL_VERTICAL_ALIGNMENT,
+    WD_TABLE_HORIZONTAL_ANCHOR,
+    WD_TABLE_OVERLAP,
+    WD_TABLE_VERTICAL_ANCHOR,
+)
 from docx.oxml.simpletypes import ST_Merge
 from docx.oxml.table import CT_TblGridCol
 from docx.shared import Inches, Parented, StoryChild, lazyproperty
@@ -16,7 +21,7 @@ from docx.shared import Inches, Parented, StoryChild, lazyproperty
 if TYPE_CHECKING:
     import docx.types as t
     from docx.enum.table import WD_ROW_HEIGHT_RULE, WD_TABLE_ALIGNMENT, WD_TABLE_DIRECTION
-    from docx.oxml.table import CT_Row, CT_Tbl, CT_TblPr, CT_Tc
+    from docx.oxml.table import CT_Row, CT_Tbl, CT_TblPr, CT_Tc, CT_TblpPr
     from docx.shared import Length
     from docx.styles.style import (
         ParagraphStyle,
@@ -187,6 +192,37 @@ class Table(StoryChild):
     @width.setter
     def width(self, value: Length | None):
         self._tblPr.width = value
+
+    @lazyproperty
+    def positioning(self) -> _TablePositioning:
+        """A |_TablePositioning| object providing access to floating table positioning.
+
+        Use this property to configure "around" text wrapping for tables.
+        """
+        return _TablePositioning(self._tblPr, self)
+
+    @property
+    def overlap(self) -> str | None:
+        """Member of :ref:`WdTableOverlap` or None.
+
+        Specifies whether this floating table allows other floating tables to overlap
+        with it. |None| indicates the value is inherited from the style hierarchy.
+        """
+        tblOverlap = self._tblPr.tblOverlap
+        if tblOverlap is None:
+            return None
+        return tblOverlap.val
+
+    @overlap.setter
+    def overlap(self, value: WD_TABLE_OVERLAP | str | None):
+        if value is None:
+            self._tblPr._remove_tblOverlap()
+            return
+        tblOverlap = self._tblPr.get_or_add_tblOverlap()
+        if isinstance(value, WD_TABLE_OVERLAP):
+            tblOverlap.val = value.xml_value
+        else:
+            tblOverlap.val = value
 
     @property
     def _cells(self) -> list[_Cell]:
@@ -563,3 +599,155 @@ class _Rows(Parented):
     def table(self) -> Table:
         """Reference to the |Table| object this row collection belongs to."""
         return self._parent.table
+
+
+class _TablePositioning(Parented):
+    """Provides access to positioning properties for a floating table."""
+
+    def __init__(self, tblPr: CT_TblPr, parent: Table):
+        super(_TablePositioning, self).__init__(parent)
+        self._tblPr = tblPr
+
+    @property
+    def left_from_text(self) -> Length | None:
+        """Distance from left edge of table to surrounding text.
+
+        Read/write |Length| value or |None| if not set.
+        """
+        tblpPr = self._tblPr.tblpPr
+        if tblpPr is None:
+            return None
+        return tblpPr.leftFromText
+
+    @left_from_text.setter
+    def left_from_text(self, value: Length | None):
+        if value is None and self._tblPr.tblpPr is None:
+            return
+        tblpPr = self._tblPr.get_or_add_tblpPr()
+        tblpPr.leftFromText = value
+
+    @property
+    def right_from_text(self) -> Length | None:
+        """Distance from right edge of table to surrounding text.
+
+        Read/write |Length| value or |None| if not set.
+        """
+        tblpPr = self._tblPr.tblpPr
+        if tblpPr is None:
+            return None
+        return tblpPr.rightFromText
+
+    @right_from_text.setter
+    def right_from_text(self, value: Length | None):
+        if value is None and self._tblPr.tblpPr is None:
+            return
+        tblpPr = self._tblPr.get_or_add_tblpPr()
+        tblpPr.rightFromText = value
+
+    @property
+    def top_from_text(self) -> Length | None:
+        """Distance from top edge of table to surrounding text.
+
+        Read/write |Length| value or |None| if not set.
+        """
+        tblpPr = self._tblPr.tblpPr
+        if tblpPr is None:
+            return None
+        return tblpPr.topFromText
+
+    @top_from_text.setter
+    def top_from_text(self, value: Length | None):
+        if value is None and self._tblPr.tblpPr is None:
+            return
+        tblpPr = self._tblPr.get_or_add_tblpPr()
+        tblpPr.topFromText = value
+
+    @property
+    def bottom_from_text(self) -> Length | None:
+        """Distance from bottom edge of table to surrounding text.
+
+        Read/write |Length| value or |None| if not set.
+        """
+        tblpPr = self._tblPr.tblpPr
+        if tblpPr is None:
+            return None
+        return tblpPr.bottomFromText
+
+    @bottom_from_text.setter
+    def bottom_from_text(self, value: Length | None):
+        if value is None and self._tblPr.tblpPr is None:
+            return
+        tblpPr = self._tblPr.get_or_add_tblpPr()
+        tblpPr.bottomFromText = value
+
+    @property
+    def vertical_anchor(self) -> WD_TABLE_VERTICAL_ANCHOR | None:
+        """Vertical anchor for table positioning.
+
+        Read/write member of :ref:`WdTableVerticalAnchor` or |None|.
+        """
+        tblpPr = self._tblPr.tblpPr
+        if tblpPr is None:
+            return None
+        return tblpPr.vertAnchor
+
+    @vertical_anchor.setter
+    def vertical_anchor(self, value: WD_TABLE_VERTICAL_ANCHOR | None):
+        if value is None and self._tblPr.tblpPr is None:
+            return
+        tblpPr = self._tblPr.get_or_add_tblpPr()
+        tblpPr.vertAnchor = value
+
+    @property
+    def horizontal_anchor(self) -> WD_TABLE_HORIZONTAL_ANCHOR | None:
+        """Horizontal anchor for table positioning.
+
+        Read/write member of :ref:`WdTableHorizontalAnchor` or |None|.
+        """
+        tblpPr = self._tblPr.tblpPr
+        if tblpPr is None:
+            return None
+        return tblpPr.horzAnchor
+
+    @horizontal_anchor.setter
+    def horizontal_anchor(self, value: WD_TABLE_HORIZONTAL_ANCHOR | None):
+        if value is None and self._tblPr.tblpPr is None:
+            return
+        tblpPr = self._tblPr.get_or_add_tblpPr()
+        tblpPr.horzAnchor = value
+
+    @property
+    def x(self) -> Length | None:
+        """Horizontal position relative to anchor.
+
+        Read/write |Length| value or |None| if not set. Can be negative.
+        """
+        tblpPr = self._tblPr.tblpPr
+        if tblpPr is None:
+            return None
+        return tblpPr.tblpX
+
+    @x.setter
+    def x(self, value: Length | None):
+        if value is None and self._tblPr.tblpPr is None:
+            return
+        tblpPr = self._tblPr.get_or_add_tblpPr()
+        tblpPr.tblpX = value
+
+    @property
+    def y(self) -> Length | None:
+        """Vertical position relative to anchor.
+
+        Read/write |Length| value or |None| if not set. Can be negative.
+        """
+        tblpPr = self._tblPr.tblpPr
+        if tblpPr is None:
+            return None
+        return tblpPr.tblpY
+
+    @y.setter
+    def y(self, value: Length | None):
+        if value is None and self._tblPr.tblpPr is None:
+            return
+        tblpPr = self._tblPr.get_or_add_tblpPr()
+        tblpPr.tblpY = value

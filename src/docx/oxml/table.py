@@ -4,14 +4,22 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable, cast
 
-from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT, WD_ROW_HEIGHT_RULE, WD_TABLE_DIRECTION
+from docx.enum.table import (
+    WD_CELL_VERTICAL_ALIGNMENT,
+    WD_ROW_HEIGHT_RULE,
+    WD_TABLE_DIRECTION,
+    WD_TABLE_HORIZONTAL_ANCHOR,
+    WD_TABLE_VERTICAL_ANCHOR,
+)
 from docx.exceptions import InvalidSpanError
 from docx.oxml.ns import nsdecls, qn
 from docx.oxml.parser import parse_xml
 from docx.oxml.shared import CT_DecimalNumber
 from docx.oxml.simpletypes import (
     ST_Merge,
+    ST_SignedTwipsMeasure,
     ST_TblLayoutType,
+    ST_TblOverlap,
     ST_TblWidth,
     ST_TwipsMeasure,
     XsdInt,
@@ -294,6 +302,50 @@ class CT_TblLayoutType(BaseOxmlElement):
     )
 
 
+class CT_TblOverlap(BaseOxmlElement):
+    """`w:tblOverlap` element.
+
+    Specifies whether a floating table allows overlap with other floating tables.
+    """
+
+    val: str = RequiredAttribute(  # pyright: ignore[reportAssignmentType]
+        "w:val", ST_TblOverlap
+    )
+
+
+class CT_TblpPr(BaseOxmlElement):
+    """`w:tblpPr` element.
+
+    Specifies the positioning properties for a floating table, including anchoring,
+    position, and distance from text.
+    """
+
+    leftFromText: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "w:leftFromText", ST_TwipsMeasure
+    )
+    rightFromText: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "w:rightFromText", ST_TwipsMeasure
+    )
+    topFromText: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "w:topFromText", ST_TwipsMeasure
+    )
+    bottomFromText: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "w:bottomFromText", ST_TwipsMeasure
+    )
+    vertAnchor: WD_TABLE_VERTICAL_ANCHOR | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "w:vertAnchor", WD_TABLE_VERTICAL_ANCHOR
+    )
+    horzAnchor: WD_TABLE_HORIZONTAL_ANCHOR | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "w:horzAnchor", WD_TABLE_HORIZONTAL_ANCHOR
+    )
+    tblpX: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "w:tblpX", ST_SignedTwipsMeasure
+    )
+    tblpY: Length | None = OptionalAttribute(  # pyright: ignore[reportAssignmentType]
+        "w:tblpY", ST_SignedTwipsMeasure
+    )
+
+
 class CT_TblPr(BaseOxmlElement):
     """``<w:tblPr>`` element, child of ``<w:tbl>``, holds child elements that define
     table properties such as style and borders."""
@@ -301,10 +353,14 @@ class CT_TblPr(BaseOxmlElement):
     get_or_add_bidiVisual: Callable[[], CT_OnOff]
     get_or_add_jc: Callable[[], CT_Jc]
     get_or_add_tblLayout: Callable[[], CT_TblLayoutType]
+    get_or_add_tblOverlap: Callable[[], CT_TblOverlap]
+    get_or_add_tblpPr: Callable[[], CT_TblpPr]
     get_or_add_tblW: Callable[[], CT_TblWidth]
     _add_tblStyle: Callable[[], CT_String]
     _remove_bidiVisual: Callable[[], None]
     _remove_jc: Callable[[], None]
+    _remove_tblOverlap: Callable[[], None]
+    _remove_tblpPr: Callable[[], None]
     _remove_tblStyle: Callable[[], None]
     _remove_tblW: Callable[[], None]
 
@@ -330,6 +386,12 @@ class CT_TblPr(BaseOxmlElement):
     )
     tblStyle: CT_String | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
         "w:tblStyle", successors=_tag_seq[1:]
+    )
+    tblpPr: CT_TblpPr | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+        "w:tblpPr", successors=_tag_seq[2:]
+    )
+    tblOverlap: CT_TblOverlap | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
+        "w:tblOverlap", successors=_tag_seq[3:]
     )
     bidiVisual: CT_OnOff | None = ZeroOrOne(  # pyright: ignore[reportAssignmentType]
         "w:bidiVisual", successors=_tag_seq[4:]

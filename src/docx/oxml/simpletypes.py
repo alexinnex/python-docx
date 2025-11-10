@@ -385,6 +385,15 @@ class ST_TblLayoutType(XsdString):
             raise ValueError("must be one of %s, got '%s'" % (valid_values, value))
 
 
+class ST_TblOverlap(XsdStringEnumeration):
+    """Valid values for <w:tblOverlap val=""> attribute."""
+
+    NEVER = "never"
+    OVERLAP = "overlap"
+
+    _members = (NEVER, OVERLAP)
+
+
 class ST_TblWidth(XsdString):
     @classmethod
     def validate(cls, value: Any) -> None:

@@ -134,3 +134,69 @@ class WD_TABLE_DIRECTION(BaseEnum):
         "The table or row is arranged with the first column in the rightmost position.",
     )
     """The table or row is arranged with the first column in the rightmost position."""
+
+
+class WD_TABLE_HORIZONTAL_ANCHOR(BaseXmlEnum):
+    """Specifies the horizontal anchor for a floating table.
+
+    Example::
+
+        from docx.enum.table import WD_TABLE_HORIZONTAL_ANCHOR
+
+        table = document.add_table(3, 3)
+        table.positioning.horizontal_anchor = WD_TABLE_HORIZONTAL_ANCHOR.MARGIN
+
+    MS API name: `ST_HAnchor`
+    """
+
+    TEXT = (0, "text", "Anchor relative to text (column).")
+    """Anchor relative to text (column)."""
+
+    MARGIN = (1, "margin", "Anchor relative to page margin.")
+    """Anchor relative to page margin."""
+
+    PAGE = (2, "page", "Anchor relative to page edge.")
+    """Anchor relative to page edge."""
+
+
+class WD_TABLE_VERTICAL_ANCHOR(BaseXmlEnum):
+    """Specifies the vertical anchor for a floating table.
+
+    Example::
+
+        from docx.enum.table import WD_TABLE_VERTICAL_ANCHOR
+
+        table = document.add_table(3, 3)
+        table.positioning.vertical_anchor = WD_TABLE_VERTICAL_ANCHOR.TEXT
+
+    MS API name: `ST_VAnchor`
+    """
+
+    TEXT = (0, "text", "Anchor relative to text (paragraph).")
+    """Anchor relative to text (paragraph)."""
+
+    MARGIN = (1, "margin", "Anchor relative to page margin.")
+    """Anchor relative to page margin."""
+
+    PAGE = (2, "page", "Anchor relative to page edge.")
+    """Anchor relative to page edge."""
+
+
+class WD_TABLE_OVERLAP(BaseXmlEnum):
+    """Specifies whether a floating table allows other floating tables to overlap.
+
+    Example::
+
+        from docx.enum.table import WD_TABLE_OVERLAP
+
+        table = document.add_table(3, 3)
+        table.overlap = WD_TABLE_OVERLAP.NEVER
+
+    MS API name: `ST_TblOverlap`
+    """
+
+    NEVER = (0, "never", "Floating table does not allow overlap with other tables.")
+    """Floating table does not allow overlap with other tables."""
+
+    OVERLAP = (1, "overlap", "Floating table allows overlap with other tables.")
+    """Floating table allows overlap with other tables."""
